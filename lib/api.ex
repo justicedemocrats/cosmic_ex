@@ -11,6 +11,9 @@ defmodule Cosmic.Api do
   end
 
   defp process_response_body(raw) do
-    Poison.decode!(raw)
+    case Poison.decode(raw) do
+      {:ok, map} -> map
+      {:error, _error} -> raw
+    end
   end
 end
