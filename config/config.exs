@@ -29,4 +29,4 @@ use Mix.Config
 #
 #     import_config "#{Mix.env}.exs"
 
-config :cosmic, slug: "brand-new-congress"
+config :cosmic, slugs: ["brand-new-congress", "alison-hartson"]

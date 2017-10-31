@@ -1,16 +1,23 @@
 defmodule Cosmic.Api do
   use HTTPotion.Base
+
   @slug Application.get_env(:cosmic, :slug)
 
-  defp process_url(url) do
-    if String.length(url) > 0 do
-      if contains_one(url, ["object-type", "edit-object", "add-object"]) do
-        "https://api.cosmicjs.com/v1/#{@slug}/#{url}"
-      else
-        "https://api.cosmicjs.com/v1/#{@slug}/object/#{url}"
-      end
-    else
-      "https://api.cosmicjs.com/v1/#{@slug}"
+  defp process_url(url, opts) do
+    slug = Keyword.get(opts, :slug, @slug)
+
+    cond do
+      # GET /
+      String.length(url) == 0 ->
+        "https://api.cosmicjs.com/v1/#{slug}"
+
+      # POST, PUT /edit-object-type, etc.
+      contains_one(url, ["object-type", "edit-object", "add-object"]) ->
+        "https://api.cosmicjs.com/v1/#{slug}/#{url}"
+
+      # Regular GET /slug
+      true ->
+        "https://api.cosmicjs.com/v1/#{slug}/object/#{url}"
     end
   end
 
