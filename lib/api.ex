@@ -4,7 +4,7 @@ defmodule Cosmic.Api do
 
   defp process_url(url) do
     if String.length(url) > 0 do
-      if String.contains?(url, "object-type") do
+      if contains_one(url, ["object-type", "edit-object", "add-object"]) do
         "https://api.cosmicjs.com/v1/#{@slug}/#{url}"
       else
         "https://api.cosmicjs.com/v1/#{@slug}/object/#{url}"
@@ -34,5 +34,11 @@ defmodule Cosmic.Api do
       {:ok, map} -> map
       {:error, _error} -> raw
     end
+  end
+
+  defp contains_one(string, substrings) do
+    (substrings
+    |> Enum.filter(fn sub -> String.contains?(string, sub) end)
+    |> List.first()) == nil
   end
 end
