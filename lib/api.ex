@@ -14,6 +14,21 @@ defmodule Cosmic.Api do
     end
   end
 
+  defp process_request_headers(hdrs) do
+    Enum.into(hdrs, ["Accept": "application/json", "Content-Type": "application/json"])
+  end
+
+  defp process_request_body(body) when is_map(body) do
+    case Poison.encode(body) do
+      {:ok, encoded} -> encoded
+      {:error, problem} -> problem
+    end
+  end
+
+  defp process_request_body(body) do
+    body
+  end
+
   defp process_response_body(raw) do
     case Poison.decode(raw) do
       {:ok, map} -> map
