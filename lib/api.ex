@@ -43,9 +43,12 @@ defmodule Cosmic.Api do
     end
   end
 
-  defp contains_one(string, substrings) do
-    (substrings
-    |> Enum.filter(fn sub -> String.contains?(string, sub) end)
-    |> List.first()) == nil
+  def contains_one(string, substrings) do
+    contains_n =
+      substrings
+      |> Enum.filter(fn sub -> String.contains?(string, sub) end)
+      |> length()
+
+    contains_n > 0
   end
 end
