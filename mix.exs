@@ -6,7 +6,7 @@ defmodule Cosmic.Mixfile do
       app: :cosmic,
       version: "0.1.0",
       elixir: "~> 1.5",
-      start_permanent: Mix.env == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
@@ -20,8 +20,6 @@ defmodule Cosmic.Mixfile do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    [{:httpotion, "~> 3.0.2"},
-     {:stash, "~> 1.0.0"},
-     {:poison, "~> 3.1"}]
+    [{:httpotion, "~> 3.0.2"}, {:stash, "~> 1.0.0"}, {:poison, "~> 3.1"}]
   end
 end

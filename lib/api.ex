@@ -22,7 +22,7 @@ defmodule Cosmic.Api do
   end
 
   defp process_request_headers(hdrs) do
-    Enum.into(hdrs, ["Accept": "application/json", "Content-Type": "application/json"])
+    Enum.into(hdrs, Accept: "application/json", "Content-Type": "application/json")
   end
 
   defp process_request_body(body) when is_map(body) do
