@@ -12,36 +12,35 @@ defmodule Cosmic do
     if @slug != nil do
       fetch_bucket(@slug)
     else
+      bucket_tasks = Enum.map(@slugs, fn slug -> Task.async(fn -> fetch_bucket(slug) end) end)
+      buckets = Enum.map(bucket_tasks, &Task.await/1)
+
+      Enum.map(buckets, &cache_bucket/1)
       tasks = Enum.map(@slugs, fn slug -> Task.async(fn -> fetch_bucket(slug) end) end)
       Enum.each(tasks, &Task.await/1)
     end
   end
 
   def fetch_bucket(bucket_slug) do
-    try do
-      %{body: %{"bucket" => %{"objects" => objects}}} = Cosmic.Api.get("", slug: bucket_slug)
+    %{body: %{"bucket" => %{"objects" => objects}}} = Cosmic.Api.get("", slug: bucket_slug)
+    {bucket_slug, objects}
+  end
 
-      # Store each object
-      Enum.each(objects, fn object ->
-        Stash.set(:cosmic_cache, prefix(object["slug"], bucket_slug), object)
-      end)
+  def cache_bucket({bucket_slug, objects}) do
+    # Store each object
+    Enum.each(objects, fn object ->
+      Stash.set(:cosmic_cache, prefix(object["slug"], bucket_slug), object)
+    end)
 
-      # For each type, store an array of slugs
-      objects
-      |> Enum.map(fn %{"type_slug" => type} -> type end)
-      |> MapSet.new()
-      |> Enum.each(curry_cache_type_slugs(objects, bucket_slug))
+    # For each type, store an array of slugs
+    objects
+    |> Enum.map(fn %{"type_slug" => type} -> type end)
+    |> MapSet.new()
+    |> Enum.each(curry_cache_type_slugs(objects, bucket_slug))
 
-      Stash.persist(:cosmic_cache, "./cosmic_cache")
-
-      Logger.info(
-        "Fetched cosmic data for #{bucket_slug} on #{DateTime.utc_now() |> DateTime.to_iso8601()}"
-      )
-    rescue
-      _e in MatchError ->
-        Logger.error("Could not fetch cosmic data - using latest cached version")
-        Stash.load(:cosmic_cache, "./cosmic_cache")
-    end
+    Logger.info(
+      "Fetched cosmic data for #{bucket_slug} on #{DateTime.utc_now() |> DateTime.to_iso8601()}"
+    )
   end
 
   defp on_no_exist(path) do
