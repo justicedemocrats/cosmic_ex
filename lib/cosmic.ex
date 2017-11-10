@@ -22,7 +22,7 @@ defmodule Cosmic do
   end
 
   def fetch_bucket(bucket_slug) do
-    %{body: %{"bucket" => %{"objects" => objects}}} = Cosmic.Api.get("", slug: bucket_slug)
+    %{body: %{"bucket" => %{"objects" => objects}}} = Cosmic.Api.get("", slug: bucket_slug, timeout: 12_000)
     {bucket_slug, objects}
   end
 
