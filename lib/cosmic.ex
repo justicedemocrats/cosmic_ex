@@ -14,7 +14,7 @@ defmodule Cosmic do
       cache_bucket(bucket)
     else
       bucket_tasks = Enum.map(@slugs, fn slug -> Task.async(fn -> fetch_bucket(slug) end) end)
-      buckets = Enum.map(bucket_tasks, &Task.await/1)
+      buckets = Enum.map(bucket_tasks, fn b -> Task.await(b, 15_000) end)
 
       Enum.map(buckets, &cache_bucket/1)
       tasks = Enum.map(@slugs, fn slug -> Task.async(fn -> fetch_bucket(slug) end) end)
