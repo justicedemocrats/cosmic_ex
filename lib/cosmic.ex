@@ -13,14 +13,10 @@ defmodule Cosmic do
       bucket = fetch_bucket(@slug)
       cache_bucket(bucket)
     else
-      bucket_tasks =
-        Enum.map(@slugs, fn slug ->
-          Task.async(fn ->
-            fetch_bucket(slug) |> cache_bucket()
-          end)
-        end)
-
+      bucket_tasks = Enum.map(@slugs, fn slug -> Task.async(fn -> fetch_bucket(slug) end) end)
       buckets = Enum.map(bucket_tasks, fn b -> Task.await(b, 150_000) end)
+
+      Enum.map(buckets, &cache_bucket/1)
     end
   end
 
@@ -34,7 +30,6 @@ defmodule Cosmic do
   def cache_bucket({bucket_slug, objects}) do
     # Store each object
     Enum.each(objects, fn object ->
-      IO.inspect object
       Stash.set(:cosmic_cache, prefix(object["slug"], bucket_slug), object)
     end)
 
