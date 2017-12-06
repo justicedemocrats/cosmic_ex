@@ -1,9 +1,30 @@
 defmodule Cosmic do
   require Logger
+  alias Phoenix.{PubSub}
 
   @slug Application.get_env(:cosmic, :slug)
   @slugs Application.get_env(:cosmic, :slugs)
 
+  # ------------ Start GenServer stuff -----------
+  use GenServer
+
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, :ok, opts)
+  end
+
+  def init(opts) do
+    app_name = Keyword.get(opts, :application, :cosmic)
+    PubSub.subscribe(:cosmic, "update")
+    spawn(&fetch_all/0)
+    {:ok, %{}}
+  end
+
+  def handle_info(_, _) do
+    fetch_all()
+    {:noreply, %{}}
+  end
+
+  # ------------- standard local ets caching -------
   def prefix(slug, bucket_slug \\ @slug) do
     "#{bucket_slug}/#{slug}"
   end

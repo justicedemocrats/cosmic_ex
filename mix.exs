@@ -20,6 +20,9 @@ defmodule Cosmic.Mixfile do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    [{:httpotion, "~> 3.0.2"}, {:stash, "~> 1.0.0"}, {:poison, "~> 3.1"}]
+    [
+      {:httpotion, "~> 3.0.2"}, {:stash, "~> 1.0.0"}, {:poison, "~> 3.1"},
+      {:phoenix_pubsub, "~> 1.0"},
+    ]
   end
 end
