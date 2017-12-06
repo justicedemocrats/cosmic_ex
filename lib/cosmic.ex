@@ -15,7 +15,7 @@ defmodule Cosmic do
 
   def init(app_name) do
     PubSub.subscribe(app_name, "update")
-    spawn(&fetch_all/0)
+    fetch_all()
     {:ok, %{}}
   end
 
