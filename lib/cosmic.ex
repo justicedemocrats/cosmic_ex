@@ -8,12 +8,12 @@ defmodule Cosmic do
   # ------------ Start GenServer stuff -----------
   use GenServer
 
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, :ok, opts)
+  def start_link(opts) do
+    app_name = Keyword.get(opts, :application, :cosmic)
+    GenServer.start_link(__MODULE__, app_name, [])
   end
 
-  def init(opts) do
-    app_name = Keyword.get(opts, :application, :cosmic)
+  def init(app_name) do
     PubSub.subscribe(app_name, "update")
     spawn(&fetch_all/0)
     {:ok, %{}}
