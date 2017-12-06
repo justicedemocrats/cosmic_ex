@@ -14,12 +14,12 @@ defmodule Cosmic do
 
   def init(opts) do
     app_name = Keyword.get(opts, :application, :cosmic)
-    PubSub.subscribe(:cosmic, "update")
+    PubSub.subscribe(app_name, "update")
     spawn(&fetch_all/0)
     {:ok, %{}}
   end
 
-  def handle_info(_, _) do
+  def handle_info("update", _) do
     fetch_all()
     {:noreply, %{}}
   end
