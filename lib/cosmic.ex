@@ -79,8 +79,9 @@ defmodule Cosmic do
   end
 
   defp on_no_exist(path) do
+    Logger.info("Path #{path} is not cached. Fetching...")
+
     path
-    |> IO.inspect("Path #{path} is not cached. Fetching...")
     |> Cosmic.Api.get
     |> process_response_body(path)
   end
