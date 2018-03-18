@@ -65,13 +65,6 @@ defmodule Cosmic do
     )
   end
 
-  defp on_no_exist(path) do
-    IO.puts("Path #{path} is not cached. fetching...")
-    %{body: body} = Cosmic.Api.get(path)
-    Stash.set(:cosmic_cache, path, body)
-    body
-  end
-
   def get(path, bucket_slug \\ @slug) do
     case Stash.get(:cosmic_cache, prefix(path, bucket_slug)) do
       nil -> on_no_exist(path)
@@ -84,6 +77,30 @@ defmodule Cosmic do
     |> (fn t -> Stash.get(:cosmic_cache, prefix(t, bucket_slug)) end).()
     |> Enum.map(&Stash.get(:cosmic_cache, prefix(&1, bucket_slug)))
   end
+
+  defp on_no_exist(path) do
+    path
+    |> IO.inspect("Path #{path} is not cached. Fetching...")
+    |> Cosmic.Api.get
+    |> process_response_body(path)
+  end
+
+  defp process_response_body(%{body: body, status_code: status_code}, path) when status_code == 200 do
+    Stash.set(:cosmic_cache, path, body)
+    body
+  end
+
+  defp process_response_body(%{status_code: status_code}, path) do
+    %{
+      "content" => "#{status_code}! Failed to fetch cosmic data for #{path}",
+      "error" => true,
+      "failed_at" => DateTime.utc_now() |> DateTime.to_iso8601(),
+      "path" => path,
+      "status_code" => status_code
+    }
+  end
+
+  defp process_response_body(_, path), do: "Unknown error while fetching cosmic data for #{path}"
 
   def update() do
     Stash.clear(:cosmic_cache)
