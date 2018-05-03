@@ -15,12 +15,12 @@ defmodule Cosmic do
 
   def init(app_name) do
     PubSub.subscribe(app_name, "update")
-    fetch_all()
+    spawn(fn -> fetch_all() end)
     {:ok, %{}}
   end
 
   def handle_info("update", _) do
-    fetch_all()
+    spawn(fn -> fetch_all() end)
     {:noreply, %{}}
   end
 
