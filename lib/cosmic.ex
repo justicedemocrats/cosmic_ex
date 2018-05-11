@@ -82,13 +82,14 @@ defmodule Cosmic do
     Logger.info("Path #{path} is not cached. Fetching...")
 
     path
-    |> Cosmic.Api.get
+    |> Cosmic.Api.get()
     |> process_response_body(path)
   end
 
-  defp process_response_body(%{body: body, status_code: status_code}, path) when status_code == 200 do
+  defp process_response_body(%{body: body, status_code: status_code}, path)
+       when status_code == 200 do
     Stash.set(:cosmic_cache, path, body)
-    body
+    body["object"] || body["objects"]
   end
 
   defp process_response_body(%{status_code: status_code}, path) do
