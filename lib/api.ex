@@ -1,10 +1,10 @@
 defmodule Cosmic.Api do
   use HTTPotion.Base
 
-  @slug Application.get_env(:cosmic, :slug)
+  def get_slug, do: Application.get_env(:cosmic, :slug)
 
   defp process_url(url, opts) do
-    slug = Keyword.get(opts, :slug, @slug)
+    slug = Keyword.get(opts, :slug, get_slug())
 
     cond do
       # GET /

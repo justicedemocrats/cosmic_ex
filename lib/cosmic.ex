@@ -2,8 +2,8 @@ defmodule Cosmic do
   require Logger
   alias Phoenix.{PubSub}
 
-  @slug Application.get_env(:cosmic, :slug)
-  @slugs Application.get_env(:cosmic, :slugs)
+  def get_slug, do: Application.get_env(:cosmic, :slug)
+  def get_slugs, do: Application.get_env(:cosmic, :slugs)
 
   # ------------ Start GenServer stuff -----------
   use GenServer
@@ -25,16 +25,19 @@ defmodule Cosmic do
   end
 
   # ------------- standard local ets caching -------
-  def prefix(slug, bucket_slug \\ @slug) do
-    "#{bucket_slug}/#{slug}"
+  def prefix(slug, bucket_slug \\ false) do
+    bucket = if bucket_slug, do: bucket_slug, else: get_slug()
+    "#{bucket}/#{slug}"
   end
 
   def fetch_all do
-    if @slug != nil do
-      bucket = fetch_bucket(@slug)
+    if get_slug() != nil do
+      bucket = fetch_bucket(get_slug())
       cache_bucket(bucket)
     else
-      bucket_tasks = Enum.map(@slugs, fn slug -> Task.async(fn -> fetch_bucket(slug) end) end)
+      bucket_tasks =
+        Enum.map(get_slugs(), fn slug -> Task.async(fn -> fetch_bucket(slug) end) end)
+
       buckets = Enum.map(bucket_tasks, fn b -> Task.await(b, 150_000) end)
 
       Enum.map(buckets, &cache_bucket/1)
@@ -65,14 +68,18 @@ defmodule Cosmic do
     )
   end
 
-  def get(path, bucket_slug \\ @slug) do
+  def get(path, bucket_slug \\ false) do
+    bucket = if bucket_slug, do: bucket_slug, else: get_slug()
+
     case Stash.get(:cosmic_cache, prefix(path, bucket_slug)) do
       nil -> on_no_exist(path)
       val -> val
     end
   end
 
-  def get_type(type, bucket_slug \\ @slug) do
+  def get_type(type, bucket_slug \\ false) do
+    bucket = if bucket_slug, do: bucket_slug, else: get_slug()
+
     type
     |> (fn t -> Stash.get(:cosmic_cache, prefix(t, bucket_slug)) end).()
     |> Enum.map(&Stash.get(:cosmic_cache, prefix(&1, bucket_slug)))
